@@ -24,6 +24,7 @@ from ramlab.util.pandas import load_csv_with_progress
 
 
 def parse_hitran_data(file_path):
+    # See https://hitran.org/media/refs/HITRAN_QN_formats.pdf
     df = load_csv_with_progress(file_path, header=None)
 
     idx_reject = df[0].str.len() != 160

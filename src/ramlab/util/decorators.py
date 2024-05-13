@@ -10,5 +10,5 @@ def composed(*decs):
     return deco
 
 
-def abstractproperty():
-    return lambda f: property(abstractmethod(f))
+def abstractproperty(fun):
+    return classmethod(property(abstractmethod(fun)))

@@ -1,10 +1,17 @@
 from ramlab.hitran.parser import parse_hitran_data
 from ramlab.molecules.state import State
 from ramlab.molecules.transitions import Transitions
+import numpy as np
+from scipy.constants import k, h, c
 
 
 # TODO: Communicate units clearly
 class Molecule:
+    def __init__(self, *args, **kwargs) -> None:
+        raise NotImplementedError(
+            "The Molecule class should not be used as an instance. Did you use something like `M=CH4()`? Replace it with `M=CH4`"
+        )
+
     @classmethod
     def E(cls, state: State) -> float:
         """Returns the energy of a given state.
@@ -70,7 +77,7 @@ class Molecule:
         raise NotImplementedError()
 
     @classmethod
-    def get_all_transitions(cls) -> Transitions:
+    def get_all_transitions(cls, laser_wavelength: float = None) -> Transitions:
         """Returns all possible transitions for the molecule.
 
         Returns:
@@ -88,7 +95,20 @@ class Molecule:
         Returns:
             float: The populations of the state.
         """
-        raise NotImplementedError()
+
+        # Assume thermal equilibrium for now
+        if len(temperatures) != 1:
+            raise ValueError(
+                f"Only one temperature is allowed for the base molecule. Fitting of Tr=/=Tv is not yet implemented for {cls.__name__}."
+            )
+
+        T = temperatures["T"]
+        g = state_initial.degeneracy
+        E = state_initial.E
+        weights = g * np.exp(-100 * h * c * E / (k * T))
+        sumofstates = np.sum(weights)
+        n = weights / sumofstates
+        return n
 
     @classmethod
     def get_intensity_constant(

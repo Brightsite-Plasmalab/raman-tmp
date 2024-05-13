@@ -35,21 +35,26 @@ class Transitions:
         return Transitions(self.linelist.sort_values(by=column, **kwargs))
 
     def __getattr__(self, name: str) -> Any:
-        if name in self.linelist.columns:
-            return self.linelist[name].values
+        if name in self.__dict__["linelist"].columns:
+            return self.__dict__["linelist"][name].values
         else:
             raise AttributeError(f"'Transitions' object has no attribute '{name}'.")
 
-    # def __setattr__(self, name: str, value: Any):
-    #     if name == "linelist":
-    #         super().__setattr__(name, value)
-    #     self.linelist[name] = value
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "linelist":
+            super().__setattr__(name, value)
+        else:
+            self.linelist[name] = value
+
+    def __setitem__(self, name: str, value: Any) -> None:
+        self.linelist[name] = value
 
     def __getitem__(self, key):
         if (
             isinstance(key, slice)
             or isinstance(key, int)
             or isinstance(key, np.ndarray)
+            or isinstance(key, pd.arrays.BooleanArray)
         ):
             # Get the start, stop, and step from the slice
             return Transitions(self.linelist.iloc[key])
@@ -60,3 +65,6 @@ class Transitions:
 
     def __len__(self):
         return self.linelist.size
+
+    def __repr__(self):
+        return f"Transitions[{len(self)}]({', '.join([f'{k}' for k in self.linelist.columns])})"
