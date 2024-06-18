@@ -1,5 +1,5 @@
 from pathlib import Path
-from ramlab.hitran.formatter import format_transitions
+from ramlab.hitran.lineformatter import format_transitions
 from ramlab.molecules.hitran_linelist_molecule import LineListMolecule
 import pandas as pd
 import numpy as np
@@ -59,45 +59,48 @@ class AbInitioMolecule(LineListMolecule):
                 f.write(line + "\n")
 
     @abstractproperty
-    def molecule_number(cls) -> int:
-        """The molecule number according to the HITRAN database."""
-        raise NotImplementedError()
+    def molecule_number(subclass) -> int:
+        return subclass.molecule_number
 
     @abstractproperty
-    def molecule_name(cls) -> str:
-        """The molecule name according to the HITRAN database."""
-        raise NotImplementedError()
+    def molecule_name(subclass) -> str:
+        return subclass.molecule_name
 
     @abstractproperty
     def isotope_number(cls) -> int:
         """The isotope number according to the HITRAN database."""
-        raise NotImplementedError()
+        return 1 #placeholder - probably correct anyway
 
     @classmethod
     def _make_transitions(
         cls, laser_wavelength: float, state_initial: State, state_final: State
     ) -> Transitions:
-
+        #print (state_initial, state_final)
         for state in [state_initial, state_final]:
             state.degeneracy = cls._calc_degeneracy(state)
             state.quanta_global = cls._format_quanta_global(state)
             state.quanta_local = cls._format_quanta_local(state)
             state.quanta = np.char.add(state.quanta_global, state.quanta_local)
+            #state.Er = cls.Er(state)
+            #state.Ev = cls.Ev(state)
             state.E = cls.E(state)
-
+             
         initial_is_lower = state_initial.E < state_final.E
-
         state_lower = state_initial[initial_is_lower] + state_final[~initial_is_lower]
-        state_upper = state_final[initial_is_lower] + state_initial[~initial_is_lower]
-
+        state_upper = state_final[initial_is_lower] + state_initial[~initial_is_lower]     
         transitions = Transitions(pd.DataFrame())
         for col in state_lower.state.keys():
             transitions["lower_" + col] = state_lower.state[col]
             transitions["upper_" + col] = state_upper.state[col]
-
+        print("transitions complete")
         transitions.dv = state_upper.v - state_lower.v
         transitions.dJ = state_upper.J - state_lower.J
         transitions.dE = state_upper.E - state_lower.E
+      #  transitions.dEr = state_upper.Er - state_lower.Er
+     #   transitions.dEv = state_upper.Ev - state_lower.Ev
+        if state_upper.O is not None:
+            
+            transitions.dO = state_upper.O - state_lower.O
 
         # Filter out transitions that are not allowed
         transitions = cls._validate_transitions(transitions)
@@ -105,10 +108,10 @@ class AbInitioMolecule(LineListMolecule):
 
         transitions.vacuum_wavenumber = state_upper.E - state_lower.E
         transitions.crosssection = cls._calc_crosssection(transitions)
-        transitions.depolarization_ratio = cls._calc_depolarization_ratio(transitions)
+      #  transitions.depolarization_ratio = cls._calc_depolarization_ratio(transitions)
         transitions.molecule_number = cls.molecule_number
         transitions.isotope_number = cls.isotope_number
-
+        print(transitions)
         return transitions
 
     @classmethod

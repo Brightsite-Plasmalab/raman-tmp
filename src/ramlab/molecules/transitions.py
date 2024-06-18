@@ -10,7 +10,7 @@ class Transitions:
 
     def __init__(self, linelist):
         self.linelist = linelist
-
+  
     @property
     def state_initial(self):
         return State(
