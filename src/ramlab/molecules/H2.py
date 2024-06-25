@@ -27,12 +27,24 @@ class H2(SimpleDiatomicMolecule):
     alpha3_e_1 = 0
 
     @classmethod
-    def _validate_transitions(cls, transitions: Transitions):
-        transitions = super()._validate_transitions(transitions)
+    def _get_all_transition_states(cls) -> tuple[State, State]:
+        state_initial, state_final = super()._get_all_transition_states()
 
-        idx = np.isin(transitions.dv, [-1, 0, 1]) & np.isin(transitions.dJ, [-2, 0, 2])
+        dv = state_final.v - state_initial.v
+        dJ = state_final.J - state_initial.J
 
-        return transitions[idx]
+        # Filter out transitions that are not allowed
+        mask = (
+            (state_initial.J >= 0)
+            & (state_final.J >= 0)
+            & (state_initial.v >= 0)
+            & (state_final.v >= 0)
+            & np.isin(dv, [-1, 0, 1])
+            & np.isin(dJ, [-2, 0, 2])
+            & ~((dv == 0) & (dJ == 0))
+        )
+
+        return state_initial[mask], state_final[mask]
 
     @classmethod
     def _calc_degeneracy(cls, state: State):

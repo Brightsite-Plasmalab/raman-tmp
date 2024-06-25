@@ -39,18 +39,18 @@ def parse_hitran_data(file_path):
     df2["einstein_A_coefficient"] = df[0].str[25:35].astype(float)
     # df2["gamma_air"] = df[0].str[35:40].astype(float)
     # df2["gamma_self"] = df[0].str[40:45].astype(float)
-    df2["lower_E"] = df[0].str[45:55].astype(float)
+    df2["initial_E"] = df[0].str[45:55].astype(float)
     # df2["temperature_dependence_coefficient"] = df[0].str[55:59].astype(float)
     # df2["air_pressure_induced_line_shift"] = df[0].str[59:67].astype(float)
-    df2["upper_quanta_global"] = df[0].str[67:82]
-    df2["lower_quanta_global"] = df[0].str[82:97]
-    df2["upper_quanta_local"] = df[0].str[97:112]
-    df2["lower_quanta_local"] = df[0].str[112:127]
+    df2["final_quanta_global"] = df[0].str[67:82]
+    df2["initial_quanta_global"] = df[0].str[82:97]
+    df2["final_quanta_local"] = df[0].str[97:112]
+    df2["initial_quanta_local"] = df[0].str[112:127]
     # df["Ierr"] = df[0].str[127:133]
     # df2["Iref"] = df[0].str[133:145]
     # df2["flag"] = df[0].str[145]
-    df2["upper_degeneracy"] = df[0].str[146:153].astype(float)
-    df2["lower_degeneracy"] = df[0].str[153:160].astype(float)
+    df2["final_degeneracy"] = df[0].str[146:153].astype(float)
+    df2["initial_degeneracy"] = df[0].str[153:160].astype(float)
 
     return df2
 

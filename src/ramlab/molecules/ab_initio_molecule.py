@@ -1,5 +1,5 @@
 from pathlib import Path
-from ramlab.hitran.formatter import format_transitions
+from ramlab.hitran.formatter import format_transitions_initial_final
 from ramlab.molecules.hitran_linelist_molecule import LineListMolecule
 import pandas as pd
 import numpy as np
@@ -85,25 +85,20 @@ class AbInitioMolecule(LineListMolecule):
             state.quanta = np.char.add(state.quanta_global, state.quanta_local)
             state.E = cls.E(state)
 
-        initial_is_lower = state_initial.E < state_final.E
+        transitions = Transitions()
 
-        state_lower = state_initial[initial_is_lower] + state_final[~initial_is_lower]
-        state_upper = state_final[initial_is_lower] + state_initial[~initial_is_lower]
+        # Make sure the states have the same keys
+        assert list(state_initial.keys()) == list(state_final.keys())
+        # Copy the quantum numbers
+        for col in state_initial.state.keys():
+            transitions["initial_" + col] = state_initial.state[col]
+            transitions["final_" + col] = state_final.state[col]
 
-        transitions = Transitions(pd.DataFrame())
-        for col in state_lower.state.keys():
-            transitions["lower_" + col] = state_lower.state[col]
-            transitions["upper_" + col] = state_upper.state[col]
+        transitions.dv = state_final.v - state_initial.v
+        transitions.dJ = state_final.J - state_initial.J
+        transitions.dE = state_final.E - state_initial.E
 
-        transitions.dv = state_upper.v - state_lower.v
-        transitions.dJ = state_upper.J - state_lower.J
-        transitions.dE = state_upper.E - state_lower.E
-
-        # Filter out transitions that are not allowed
-        transitions = cls._validate_transitions(transitions)
-        state_lower, state_upper = transitions.state_initial, transitions.state_final
-
-        transitions.vacuum_wavenumber = state_upper.E - state_lower.E
+        transitions.vacuum_wavenumber = state_final.E - state_initial.E
         transitions.crosssection = cls._calc_crosssection(transitions)
         transitions.depolarization_ratio = cls._calc_depolarization_ratio(transitions)
         transitions.molecule_number = cls.molecule_number
@@ -146,16 +141,5 @@ class AbInitioMolecule(LineListMolecule):
         raise NotImplementedError()
 
     @classmethod
-    def _validate_transitions(cls, transitions: Transitions):
-        idx = (
-            (transitions.state_final.J >= 0)
-            & (transitions.state_final.v >= 0)
-            & (transitions.state_initial.J >= 0)
-            & (transitions.state_initial.v >= 0)
-            & (transitions.state_initial.quanta != transitions.state_final.quanta)
-        )
-        return transitions[idx]
-
-    @classmethod
     def _transitions_to_hitran(cls, transitions: Transitions) -> pd.Series:
-        return format_transitions(transitions)
+        return format_transitions_initial_final(transitions)

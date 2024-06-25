@@ -8,6 +8,9 @@ class State:
     def __init__(self, **state):
         self.state = state
 
+    def keys(self):
+        return self.state.keys()
+
     def __getattr__(self, name: str) -> Any:
         # if name == "state":
         #     return super().__getattribute__(name)

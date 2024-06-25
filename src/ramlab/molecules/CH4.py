@@ -20,10 +20,10 @@ class CH4(LineListMolecule):
     @classmethod
     def process_hitran_data(cls, df2: pd.DataFrame) -> pd.DataFrame:
         ## Parse data specific to the methane molecule
-        # Upper global quanta
-        df2["upper_quanta"] = df2["upper_quanta_global"] + df2["upper_quanta_local"]
+        # Final global quanta
+        df2["final_quanta"] = df2["final_quanta_global"] + df2["final_quanta_local"]
 
-        for state in ["upper", "lower"]:
+        for state in ["initial", "final"]:
             # Global quanta
             df2[f"{state}_v1"] = df2[f"{state}_quanta_global"].str[3:5].astype("Int64")
             df2[f"{state}_v2"] = df2[f"{state}_quanta_global"].str[5:7].astype("Int64")
@@ -46,30 +46,30 @@ class CH4(LineListMolecule):
 
         ## Calculate rotational and vibrational energy levels
         # Filter for the ground rotational state
-        idx_ground_rotational_state = df2["lower_J"] == 0
+        idx_ground_rotational_state = df2["initial_J"] == 0
 
         # Map the ground state transitions to the ground state energy
         ground_state_transitions = pd.DataFrame(
-            index=df2["lower_quanta_global"][idx_ground_rotational_state].values,
-            data=df2["lower_E"][idx_ground_rotational_state].values,
-            columns=["lower_E"],
+            index=df2["initial_quanta_global"][idx_ground_rotational_state].values,
+            data=df2["initial_E"][idx_ground_rotational_state].values,
+            columns=["initial_E"],
         ).drop_duplicates()
 
         # For each transition, get the energy of the ground state
-        idx_global_quanta = df2["lower_quanta_global"]
+        idx_global_quanta = df2["initial_quanta_global"]
 
         # Add the energy of the vibrational state
-        df2["lower_E_vib"] = ground_state_transitions.loc[idx_global_quanta][
-            "lower_E"
+        df2["initial_E_vib"] = ground_state_transitions.loc[idx_global_quanta][
+            "initial_E"
         ].values
-        df2["lower_E_rot"] = df2["lower_E"] - df2["lower_E_vib"]
+        df2["initial_E_rot"] = df2["initial_E"] - df2["initial_E_vib"]
 
         # TODO: Contact maintainers of MeCaSDa to confirm the einstein coefficient is the cross-section.
         # The "room temperature intensity" divided by the boltzmann distribution and degeneracies results in a constant relation with the Einstein coefficient.
         # So I suspect that the Einstein coefficient is the cross-section.
         df2["crosssection"] = df2["einstein_A_coefficient"].values
         # df2["crosssection"] = df2["intensity"].values / np.exp(
-        #     -100 * h * c * df2["lower_E"].values / (k * 296)
+        #     -100 * h * c * df2["initial_E"].values / (k * 296)
         # )
 
         return df2

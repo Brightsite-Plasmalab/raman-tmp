@@ -8,16 +8,18 @@ from ramlab.molecules.state import State
 class Transitions:
     linelist: pd.DataFrame
 
-    def __init__(self, linelist):
+    def __init__(self, linelist=None):
+        if linelist is None:
+            linelist = pd.DataFrame()
         self.linelist = linelist
 
     @property
     def state_initial(self):
         return State(
             **{
-                k.replace("lower_", ""): self.linelist[k].values
+                k.replace("initial_", ""): self.linelist[k].values
                 for k in self.linelist.columns
-                if "lower_" in k
+                if k.startswith("initial_")
             }
         )
 
@@ -25,9 +27,9 @@ class Transitions:
     def state_final(self):
         return State(
             **{
-                k.replace("upper_", ""): self.linelist[k].values
+                k.replace("final_", ""): self.linelist[k].values
                 for k in self.linelist.columns
-                if "upper_" in k
+                if k.startswith("upper_")
             }
         )
 

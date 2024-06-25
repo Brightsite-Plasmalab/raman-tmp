@@ -23,35 +23,7 @@ from ramlab.molecules.transitions import Transitions
 # df2["flag"] = df[0].str[145]
 # df2["upper_degeneracy"] = df[0].str[146:153].astype(float)
 # df2["lower_degeneracy"] = df[0].str[153:160].astype(float)
-
-
-def format_transitions(transitions: Transitions) -> Transitions:
-    # Define row formatter according to the above format
-    def format_row(row):
-        return (
-            f"{row.molecule_number:02d}"
-            f"{row.isotope_number:1d}"
-            f"{row.vacuum_wavenumber:12.6f}"
-            f"{row.crosssection:10.3e}"
-            f"{row.depolarization_ratio:10.3e}"
-            f"{0:5.2f}"
-            f"{0:5.2f}"
-            f"{row.lower_E:10.3f}"
-            f"{0:4.2f}"
-            f"{0:8.2f}"
-            f"{row.upper_quanta_global:15s}"
-            f"{row.lower_quanta_global:15s}"
-            f"{row.upper_quanta_local:15s}"
-            f"{row.lower_quanta_local:15s}"
-            f"{'':6s}"
-            f"{'':12s}"
-            f"{'':1s}"
-            f"{row.upper_degeneracy:7.0f}"
-            f"{row.lower_degeneracy:7.0f}"
-        )
-
-    # Format rows
-    return transitions.linelist.apply(format_row, axis=1)
+# Changes: format initial,final as lower,upper
 
 
 def format_transitions_initial_final(transitions: Transitions) -> Transitions:
@@ -61,8 +33,8 @@ def format_transitions_initial_final(transitions: Transitions) -> Transitions:
             f"{row.molecule_number:02d}"
             f"{row.isotope_number:1d}"
             f"{row.vacuum_wavenumber:12.6f}"
-            f"{row.intensity:10.3e}"
             f"{row.crosssection:10.3e}"
+            f"{row.depolarization_ratio:10.3e}"
             f"{0:5.2f}"  # gamma_air
             f"{0:5.2f}"  # gamma_self
             f"{row.initial_E:10.3f}"  # Lower state energy

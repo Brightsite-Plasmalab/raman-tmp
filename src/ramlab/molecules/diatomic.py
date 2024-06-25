@@ -246,29 +246,29 @@ class SimpleDiatomicMolecule(AbInitioMolecule):
 
     @classmethod
     def process_hitran_data(cls, df: pd.DataFrame) -> pd.DataFrame:
-        df["lower_v"] = df["lower_quanta_global"].str[0:2].astype("Int64")
-        df["lower_J"] = df["lower_quanta_local"].str[0:2].astype("Int64")
-        df["upper_v"] = df["upper_quanta_global"].str[0:2].astype("Int64")
-        df["upper_J"] = df["upper_quanta_local"].str[0:2].astype("Int64")
+        df["initial_v"] = df["initial_quanta_global"].str[0:2].astype("Int64")
+        df["initial_J"] = df["initial_quanta_local"].str[0:2].astype("Int64")
+        df["final_v"] = df["final_quanta_global"].str[0:2].astype("Int64")
+        df["final_J"] = df["final_quanta_local"].str[0:2].astype("Int64")
 
         # Filter for the ground rotational state
-        idx_ground_rotational_state = df["lower_J"] == 0
+        idx_ground_rotational_state = df["initial_J"] == 0
 
         # Map the ground state transitions to the ground state energy
         ground_state_transitions = pd.DataFrame(
-            index=df["lower_quanta_global"][idx_ground_rotational_state].values,
-            data=df["lower_E"][idx_ground_rotational_state].values,
-            columns=["lower_E"],
+            index=df["initial_quanta_global"][idx_ground_rotational_state].values,
+            data=df["initial_E"][idx_ground_rotational_state].values,
+            columns=["initial_E"],
         ).drop_duplicates()
 
         # For each transition, get the energy of the ground state
-        idx_global_quanta = df["lower_quanta_global"]
+        idx_global_quanta = df["initial_quanta_global"]
 
         # Add the energy of the vibrational state
-        df["lower_E_vib"] = ground_state_transitions.loc[idx_global_quanta][
-            "lower_E"
+        df["initial_E_vib"] = ground_state_transitions.loc[idx_global_quanta][
+            "initial_E"
         ].values
-        df["lower_E_rot"] = df["lower_E"] - df["lower_E_vib"]
+        df["initial_E_rot"] = df["initial_E"] - df["initial_E_vib"]
 
         df["crosssection"] = df["einstein_A_coefficient"].values
 

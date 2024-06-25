@@ -1,4 +1,3 @@
-from ramlab.hitran.parser import parse_hitran_data
 from ramlab.molecules.state import State
 from ramlab.molecules.transitions import Transitions
 import numpy as np

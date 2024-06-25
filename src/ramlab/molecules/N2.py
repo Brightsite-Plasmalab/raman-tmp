@@ -28,14 +28,6 @@ class H2(SimpleDiatomicMolecule):
     alpha3_e_1 = 0
 
     @classmethod
-    def _validate_transitions(cls, transitions: Transitions):
-        transitions = super()._validate_transitions(transitions)
-
-        idx = np.isin(transitions.dv, [-1, 0, 1]) & np.isin(transitions.dJ, [-2, 0, 2])
-
-        return transitions[idx]
-
-    @classmethod
     def _calc_degeneracy(cls, state: State):
         degeneracy_nuclear = (state.J % 2) * cls.g_o + ((state.J + 1) % 2) * cls.g_e
         degeneracy = (2 * state.J + 1) * degeneracy_nuclear
