@@ -97,6 +97,14 @@ class AbInitioMolecule(LineListMolecule):
         transitions.dv = state_final.v - state_initial.v
         transitions.dJ = state_final.J - state_initial.J
         transitions.dE = state_final.E - state_initial.E
+        if 'O' in state_initial.state.keys():
+            print("Assigning other quantum states")
+            transitions.dO = state_final.O - state_initial.O
+            transitions.dL = state_final.L - state_initial.L
+            transitions.dR = state_final.R - state_initial.R
+            transitions.dN = state_final.N - state_initial.N
+            transitions.dS = state_final.S - state_initial.S
+            transitions.dp = state_final.p - state_initial.p
 
         transitions.vacuum_wavenumber = state_final.E - state_initial.E
         transitions.crosssection = cls._calc_crosssection(transitions)
